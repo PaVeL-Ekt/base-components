@@ -1,0 +1,24 @@
+{
+  "name": "pavel-ekt/base-components",
+  "description": "Base components for other packages.",
+  "keywords": [],
+  "homepage": "https://github.com/pavel-ekt/base-components",
+  "license": "BSD-3-Clause",
+  "minimum-stability": "dev",
+  "authors": [
+    {
+      "name": "Pavel Chernoskutov",
+      "email": "pavel-ekt@yandex.ru"
+    }
+  ],
+  "require": {
+    "php": ">= 5.4"
+  },
+  "autoload": {
+    "psr-4": {
+      "PavelEkt\\BaseComponents\\": "src",
+      "PavelEkt\\BaseComponents\\Abstracts\\": "src/abstracts",
+      "PavelEkt\\BaseComponents\\Exceptions\\": "src/exceptions"
+    }
+  }
+}
