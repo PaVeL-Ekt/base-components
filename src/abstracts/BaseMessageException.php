@@ -19,10 +19,10 @@ abstract class BaseMessageException extends \Exception
         $replacements = [];
         if (is_array($params)) {
             foreach ($params as $key => $value) {
-                $expressions[] = '/##' . $key . '##/uim';
+                $expressions[] = '/\{\{' . $key . '\}\}/uim';
                 $replacements[] = $value;
             }
-            $expressions[] = '/##[a-z0-9-_]*##/ium';
+            $expressions[] = '/\{\{[a-z0-9-_]*\}\}/ium';
             $replacements[] = '';
         }
         $message = preg_replace($expressions, $replacements, static::EXCEPTION_MESSAGE);
