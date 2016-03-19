@@ -8,22 +8,4 @@ class AttributeNotFoundException extends BaseMessageException
 {
     const EXCEPTION_CODE = 1001;
     const EXCEPTION_MESSAGE = 'Attribute \'{{attribute}}\' not found in class \'{{class}}\'.';
-
-    /**
-     * @inheritdoc
-     * $params must contains 'attribute' - attribute name and 'class' caller class or class name.
-     */
-    public function __construct($params, $previous = null)
-    {
-        if (!empty($params['class'])) {
-            if (is_object($params['class'])) {
-                $params['class'] = get_class($params['class']);
-            }
-        }
-        if (empty($params['class'])) {
-            $stackTrace = debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT && DEBUG_BACKTRACE_IGNORE_ARGS, 0);
-            $params['class'] = $stackTrace[count($stackTrace) - 1]['class'];
-        }
-        parent::__construct($params, $previous);
-    }
 }
