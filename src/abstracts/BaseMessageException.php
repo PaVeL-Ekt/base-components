@@ -22,8 +22,8 @@ abstract class BaseMessageException extends \Exception
         $replacements = [];
         if (is_array($params)) {
             foreach ($params as $key => $value) {
-                if (stripos($key, 'class') === 0) {
-                    $expressions[] = '/\{\{' . $key . '\}\}/uim';
+                if (strtolower($key) !== 'class') {
+                    $expressions[] = '/\{\{' . $key . '\}\}/ium';
                     $replacements[] = $value;
                 }
             }
