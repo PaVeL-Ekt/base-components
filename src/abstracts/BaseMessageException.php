@@ -2,7 +2,7 @@
 
 namespace PavelEkt\BaseComponents\Abstracts;
 
-abstract class BaseMessageException extends \Exception
+abstract class BaseMessageException extends BaseTemplateException
 {
     /**
      * @const int EXCEPTION_CODE The Exception code.
@@ -15,51 +15,10 @@ abstract class BaseMessageException extends \Exception
 
     public function __construct($params = [], $previous = null)
     {
-        /**
-         * Заменим переменные в тексте сообщения.
-         */
-        $expressions = [];
-        $replacements = [];
-        if (is_array($params)) {
-            foreach ($params as $key => $value) {
-                if (strtolower($key) !== 'class') {
-                    $expressions[] = '/\{\{' . $key . '\}\}/ium';
-                    $replacements[] = $value;
-                }
-            }
-        }
-        /**
-         * Вычислим клас, в котором произошла ошибка, и заменим переменную в шаблоне.
-         */
-        $expressions[] = '/\{\{class\}\}/ium';
-        $replacements[] = $this->getExceptionedClass($params);
-        /**
-         * Удалим все неиспользованные переменные в шаблоне.
-         */
-        $expressions[] = '/\{\{[a-z0-9-_]*\}\}/ium';
-        $replacements[] = '';
-
-        $message = preg_replace($expressions, $replacements, static::EXCEPTION_MESSAGE);
-        parent::__construct($message, static::EXCEPTION_CODE, $previous);
-    }
-
-    /**
-     * Вычисляем класс, который вызвал исключение.
-     * @param null|mixed[] $params Параметры
-     * @return string
-     */
-    protected function getExceptionedClass($params = null)
-    {
-        $result = '';
-        if (!empty($params['class'])) {
-            if (is_object($params['class'])) {
-                $result = get_class($params['class']);
-            }
-        }
-        if (empty($params['class']) && function_exists('debug_backtrace')) {
-            $stackTrace = debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT && DEBUG_BACKTRACE_IGNORE_ARGS);
-            $result = $stackTrace[count($stackTrace) - 1]['class'];
-        }
-        return $result;
+        parent::__construct(
+            $this->generateExceptionMessage(static::EXCEPTION_MESSAGE, $params),
+            static::EXCEPTION_CODE,
+            $previous
+        );
     }
 }
