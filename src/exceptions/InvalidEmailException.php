@@ -1,6 +1,6 @@
 <?php
 
-namespace PavelEkt\BaseComponents\exceptions;
+namespace PavelEkt\BaseComponents\Exceptions;
 
 use PavelEkt\BaseComponents\Abstracts\BaseException;
 
