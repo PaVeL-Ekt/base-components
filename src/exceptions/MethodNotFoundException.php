@@ -2,10 +2,16 @@
 
 namespace PavelEkt\BaseComponents\Exceptions;
 
-use PavelEkt\BaseComponents\Abstracts\BaseMessageException;
+use PavelEkt\BaseComponents\Abstracts\BaseException;
 
-class MethodNotFoundException extends BaseMessageException
+class MethodNotFoundException extends BaseException
 {
-    const EXCEPTION_CODE = 1002;
-    const EXCEPTION_MESSAGE = 'Method \'{{method}}\' not found in class \'{{class}}\'.';
+    public function __construct($method, $class = null, $previous = null)
+    {
+        parent::__construct(
+            'Method \'' . $method . '\' not found in class \'' . $this->getExceptionClass($class) . '\'.',
+            1002,
+            $previous
+        );
+    }
 }

@@ -2,10 +2,16 @@
 
 namespace PavelEkt\BaseComponents\Exceptions;
 
-use PavelEkt\BaseComponents\Abstracts\BaseMessageException;
+use PavelEkt\BaseComponents\Abstracts\BaseException;
 
-class WrongParameterTypeException extends BaseMessageException
+class WrongParameterTypeException extends BaseException
 {
-    const EXCEPTION_CODE = 1004;
-    const EXCEPTION_MESSAGE = 'Type of parameter \'{{paramName}}\' expected \'{{expectType}}\' but \'{{givenType}}\' given.';
+    public function __construct($paramName, $expectedType, $givenType, $previous)
+    {
+        parent::__construct(
+            'Type of parameter \'' . $paramName . '\' expected \'' . $expectedType . '\' but \'' . $givenType . '\' given.',
+            1004,
+            $previous
+        );
+    }
 }

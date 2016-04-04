@@ -2,10 +2,16 @@
 
 namespace PavelEkt\BaseComponents\Exceptions;
 
-use PavelEkt\BaseComponents\Abstracts\BaseMessageException;
+use PavelEkt\BaseComponents\Abstracts\BaseException;
 
-class BadEncodingException extends BaseMessageException
+class BadEncodingException extends BaseException
 {
-    const EXCEPTION_CODE = 1003;
-    const EXCEPTION_MESSAGE = 'Trying to use unsupported encoding \'{{encoding}}\'.';
+    public function __construct($encoding, $previous = null)
+    {
+        parent::__construct(
+            'Trying to use unsupported encoding \'' . $encoding . '\'.',
+            1003,
+            $previous
+        );
+    }
 }

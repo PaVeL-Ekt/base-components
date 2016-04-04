@@ -109,7 +109,7 @@ abstract class BaseComponent
         } elseif (method_exists($this, 'call' . $name)) {
             return call_user_func_array([$this, 'call' . $name], $env);
         }
-        throw new MethodNotFoundException(['method' => $name, 'class' => $this]);
+        throw new MethodNotFoundException($name, $this);
     }
 
     /**
@@ -126,7 +126,7 @@ abstract class BaseComponent
         } elseif (array_key_exists($lowName, $this->_attributes)) {
             return ($this->_attributes[$lowName]);
         }
-        throw new AttributeNotFoundException(['attribute' => $name, 'class' => $this]);
+        throw new AttributeNotFoundException($name, $this);
     }
 
     /**
@@ -146,6 +146,6 @@ abstract class BaseComponent
             $this->_attributes[$lowName] = $value;
             return $oldValue;
         }
-        throw new AttributeNotFoundException(['attribute' => $name, 'class' => $this]);
+        throw new AttributeNotFoundException($name, $this);
     }
 }
