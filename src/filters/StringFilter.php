@@ -29,9 +29,10 @@ class StringFilter extends BaseFilter
 
     public function filter($value)
     {
-        if (!is_string($value)) {
-            $value = StringHelper::toStr($value);
+        if (is_null($value)) {
+            $value = $this->default;
         }
+        $value = StringHelper::toStr($value);
         return StringHelper::strCrop(
             StringHelper::strPad(
                 $value,

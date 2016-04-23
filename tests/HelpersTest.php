@@ -2,11 +2,56 @@
 
 namespace PavelEkt\BaseComponents\Tests;
 
-use PavelEkt\BaseComponents\Filters\StringFilter;
+use PavelEkt\BaseComponents\Helpers\ArrayHelper;
+use PavelEkt\BaseComponents\Helpers\BooleanHelper;
+use PavelEkt\BaseComponents\Helpers\FloatHelper;
+use PavelEkt\BaseComponents\Helpers\IntegerHelper;
 use PavelEkt\BaseComponents\Helpers\StringHelper;
+
+use PavelEkt\BaseComponents\Filters\StringFilter;
 
 class HelpersTest extends \PHPUnit_Framework_TestCase
 {
+    public function testArrayHelper()
+    {
+        $this->assertEquals(['test'], ArrayHelper::toArray('test'));
+        $this->assertEquals([''], ArrayHelper::toArray(''));
+        $this->assertEquals([0], ArrayHelper::toArray(0));
+        $this->assertEquals([], ArrayHelper::toArray(null));
+    }
+
+    public function testBooleanHelper()
+    {
+        $this->assertTrue(BooleanHelper::toBool(true));
+        $this->assertTrue(BooleanHelper::toBool('true'));
+        $this->assertTrue(BooleanHelper::toBool('text'));
+        $this->assertTrue(BooleanHelper::toBool(1));
+        $this->assertTrue(BooleanHelper::toBool(new \stdClass()));
+        $this->assertTrue(BooleanHelper::toBool(['test']));
+
+        $this->assertFalse(BooleanHelper::toBool(false));
+        $this->assertFalse(BooleanHelper::toBool('false'));
+        $this->assertFalse(BooleanHelper::toBool(0));
+        $this->assertFalse(BooleanHelper::toBool([]));
+        $this->assertFalse(BooleanHelper::toBool(''));
+    }
+
+    public function testFloatHelper()
+    {
+        $this->assertEquals(0.1, FloatHelper::toFloat(0.1));
+        $this->assertEquals(0.1, FloatHelper::toFloat('0.1'));
+        $this->assertEquals(1, FloatHelper::toFloat(['test']));
+        $this->assertEquals(0, FloatHelper::toFloat(false));
+    }
+
+    public function testIntegerHelper()
+    {
+        $this->assertEquals(0, IntegerHelper::toInt(0.1));
+        $this->assertEquals(0, IntegerHelper::toInt('0.1'));
+        $this->assertEquals(1, IntegerHelper::toInt(['test']));
+        $this->assertEquals(0, integerHelper::toInt(false));
+    }
+
     public function testStringHelper()
     {
         //

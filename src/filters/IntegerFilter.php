@@ -3,6 +3,7 @@
 namespace PavelEkt\BaseComponents\Filters;
 
 use PavelEkt\BaseComponents\Abstracts\BaseFilter;
+use PavelEkt\BaseComponents\Helpers\IntegerHelper;
 use PavelEkt\BaseComponents\Helpers\StringHelper;
 
 /**
@@ -27,25 +28,18 @@ class IntegerFilter extends BaseFilter
      */
     public function filter($value)
     {
-        if (!is_int($value)) {
-            if (is_scalar($value)) {
-                $value = intval($value);
-            } else {
-                $default = $this->default;
-                if (!is_int($default)) {
-                    $default = 0;
-                }
-                $value = $default;
-            }
+        if (is_null($value)) {
+            $value = $this->default;
         }
+        $value = IntegerHelper::toInt($value);
 
         $min = $this->min;
-        if (!is_null($min) && is_int($min) && $value < $min) {
+        if (!is_null($min) && $value < IntegerHelper::toInt($min)) {
             $value = $min;
         }
 
         $max = $this->max;
-        if (!is_null($max) && is_int($max) && $value > $max) {
+        if (!is_null($max) && $value > IntegerHelper::toInt($max)) {
             $value = $max;
         }
 

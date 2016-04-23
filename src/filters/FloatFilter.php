@@ -3,6 +3,7 @@
 namespace PavelEkt\BaseComponents\Filters;
 
 use PavelEkt\BaseComponents\Abstracts\BaseFilter;
+use PavelEkt\BaseComponents\Helpers\FloatHelper;
 use PavelEkt\BaseComponents\Helpers\StringHelper;
 
 /**
@@ -28,25 +29,18 @@ class FloatFilter extends BaseFilter
      */
     public function filter($value)
     {
-        if (!is_float($value)) {
-            if (is_scalar($value)) {
-                $value = floatval($value);
-            } else {
-                $default = $this->default;
-                if (!is_float($default)) {
-                    $default = 0;
-                }
-                $value = $default;
-            }
+        if (is_null($value)) {
+            $value = $this->default;
         }
+        $value = FloatHelper::toFloat($value);
 
         $min = $this->min;
-        if (!is_null($min) && is_float($min) && $value < $min) {
+        if (!is_null($min) && $value < FloatHelper::toFloat($min)) {
             $value = $min;
         }
 
         $max = $this->max;
-        if (!is_null($max) && is_float($max) && $value > $max) {
+        if (!is_null($max) && $value > FloatHelper::toFloat($max)) {
             $value = $max;
         }
 

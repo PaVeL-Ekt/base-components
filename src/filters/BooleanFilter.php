@@ -3,6 +3,7 @@
 namespace PavelEkt\BaseComponents\Filters;
 
 use PavelEkt\BaseComponents\Abstracts\BaseFilter;
+use PavelEkt\BaseComponents\Helpers\BooleanHelper;
 use PavelEkt\BaseComponents\Helpers\StringHelper;
 
 /**
@@ -23,21 +24,9 @@ class BooleanFilter extends BaseFilter
      */
     public function filter($value)
     {
-        if (!is_bool($value)) {
-            if (is_scalar($value)) {
-                if (is_string($value) && $value == 'false') {
-                    $value = false;
-                } else {
-                    $value = boolval($value);
-                }
-            } else {
-                $default = $this->default;
-                if (!is_bool($default)) {
-                    $default = false;
-                }
-                $value = $default;
-            }
+        if (is_null($value)) {
+            $value = $this->default;
         }
-        return $value;
+        return BooleanHelper::toBool($value);
     }
 }
