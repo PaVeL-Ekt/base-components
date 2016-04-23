@@ -18,7 +18,12 @@
     "psr-4": {
       "PavelEkt\\BaseComponents\\": "src",
       "PavelEkt\\BaseComponents\\Abstracts\\": "src/abstracts",
-      "PavelEkt\\BaseComponents\\Exceptions\\": "src/exceptions"
+      "PavelEkt\\BaseComponents\\Exceptions\\": "src/exceptions",
+      "PavelEkt\\BaseComponents\\Filters\\": "src/filters",
+      "PavelEkt\\BaseComponents\\Helpers\\": "src/helpers",
+      "PavelEkt\\BaseComponents\\Interfaces\\": "src/interfaces",
+      "PavelEkt\\BaseComponents\\Validators\\": "src/validators",
+      "PavelEkt\\BaseComponents\\Tests\\": "tests"
     }
   }
 }

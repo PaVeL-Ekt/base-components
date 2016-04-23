@@ -3,7 +3,12 @@
 namespace PavelEkt\BaseComponents\Abstracts;
 
 use PavelEkt\BaseComponents\Exceptions\AttributeNotFoundException;
+use PavelEkt\BaseComponents\Exceptions\FilterNotFoundException;
 use PavelEkt\BaseComponents\Exceptions\MethodNotFoundException;
+use PavelEkt\BaseComponents\Exceptions\WrongFilterException;
+use PavelEkt\BaseComponents\Filters\DefaultFilter;
+use PavelEkt\BaseComponents\Helpers\StringHelper;
+use PavelEkt\BaseComponents\Interfaces\FilterInterface;
 
 /**
  * Base components, for other packages.
@@ -16,33 +21,201 @@ abstract class BaseComponent
     protected $_attributes = [];
 
     /**
+     * @var mixed[] $_filters Component attributes filters.
+     */
+    protected $_filters = [];
+
+    /**
+     * @var bool $_isFilterAttributes Ключ, включающий возможность фильтрования атрибутов.
+     */
+    protected $_isFilterAttributes = true;
+
+    /**
      * Standard component constructor
      * @param mixed[] $attributes initial attributes
+     * @throws WrongFilterException
      */
     public function __construct($attributes = [])
     {
-        /** Set extended attributes */
-        if (method_exists($this, 'getExtAttributes')) {
-            $extAttributes = call_user_func([$this, 'getExtAttributes']);
-            if (is_array($extAttributes) && !empty($extAttributes)) {
-                foreach ($extAttributes as $key => $value) {
-                    if (intval($key) == $key) {
-                        $this->_attributes[strtolower($value)] = null;
+        if (!is_array($this->_attributes)) {
+            $this->_attributes = [];
+        }
+
+        /**
+         * Подготовим дополнительные фильтры.
+         */
+        $attributeFilters = [];
+        if ($this->_isFilterAttributes) {
+            foreach ($this->attributeFilters() as $attribute => $attributeFilter) {
+                if ($filter = $this->getFilter($attribute, $attributeFilter)) {
+                    $attributeFilters[] = $filter;
+                } else {
+                    throw new WrongFilterException($attribute, $attributeFilter);
+                }
+            }
+        }
+
+        /**
+         * Подготовим передаваемые параметры
+         */
+        if (is_array($attributes)) {
+            foreach ($attributes as $attribute => $value) {
+                $newName = $this->getAttributeKey($attribute);
+                if ($newName != $attribute) {
+                    $attributes[$newName] = $value;
+                    unset($attributes[$attribute]);
+                }
+            }
+        } else {
+            $attributes = [];
+        }
+
+        /**
+         * Подготовим все атрибуты, подклбчим дополнительные фильтры.
+         */
+        foreach (
+            [$this->_attributes, call_user_func([$this, 'extendedAttributes'])
+        ] as $schemaId => $attributesData) {
+            if (!is_array($attributesData)) {
+                continue;
+            }
+            foreach ($attributesData as $attribute => $value) {
+                // Значения по умолчанию
+                $attrKey = $this->getAttributeKey($attribute);
+                $attrValue = null;
+                $attrFilters = [];
+
+                if (ctype_digit((string) $attribute)) {
+                    // Используется цифровой ключ
+                    if ($filter = $this->getFilter($attribute, $value)) {
+                        // Фильтр есть
+                        if ($this->_isFilterAttributes) {
+                            $attrFilters[] = $filter;
+                        }
                     } else {
-                        $this->_attributes[strtolower($key)] = $value;
+                        // Фильтра нет, если значение является скалярным, считаем его атрибутом
+                        if (is_scalar($value)) {
+                            $attrKey = $this->getAttributeKey($value);
+                            unset($this->_attributes[$attribute]);
+                            $attribute = $value;
+                        } else {
+                            throw new WrongFilterException($attribute, $value);
+                        }
+                    }
+                } else {
+                    // Ключ массива является именем атрибута
+                    if ($attribute != $attrKey && $schemaId == 0) {
+                        unset($this->_attributes[$attribute]);
+                    }
+                    if ($this->_isFilterAttributes && $filter = $this->getFilter($attribute, $value)) {
+                        $attrFilters[] = $filter;
+                    } else {
+                        $attrValue = $value;
                     }
                 }
+
+                if ($this->_isFilterAttributes) {
+                    if (array_key_exists($attrKey, $attributeFilters)) {
+                        foreach ($attributeFilters[$attrKey] as $extFilter) {
+                            if ($filter = $this->getFilter($attribute, $extFilter)) {
+                                $attrFilters[] = $filter;
+                            }
+                        }
+                    }
+                }
+
+                $this->_attributes[$attrKey] = [
+                    'name' => $attribute,
+                    'value' => $attrValue,
+                    'filters' => $attrFilters,
+                ];
+
+                $this->$attrKey = (array_key_exists($attrKey, $attributes) ? $attributes[$attrKey] : $attrValue);
             }
         }
-        /** Fill initialized attributes */
-        if (is_array($attributes) && !empty($attributes)) {
-            foreach ($attributes as $name => $value) {
-                $lowName = strtolower($name);
-                if (array_key_exists($lowName, $this->_attributes)) {
-                    $this->_attributes[$lowName] = $value;
+    }
+
+    /**
+     * Список дополнительных фильтров.
+     * в формате
+     * ```['attribute' => 'attributeName', 'filter' => 'filterClassName', 'params' => ['param1' => 'value', 'param2' => 'value']]```
+     * или
+     * ```['attribute' => new \PavelEkt\BaseComponents\Filters\DefaultFilter(['default' => 'default value']);
+     * @return array
+     */
+    public function attributeFilters()
+    {
+        return [];
+    }
+
+    /**
+     * Метод получение фильтра, из его описания.
+     * @param string $attribute Название атрибута.
+     * @param mixed $filter Описание фильтра.
+     * @param bool $asObject Получить объектом.
+     * @return array|bool|Object
+     * @throws FilterNotFoundException
+     * @throws WrongFilterException
+     */
+    protected function getFilter($attribute, $filter, $asObject = false)
+    {
+        if ($this->_isFilterAttributes) {
+            if (is_array($filter)) {
+                if (array_key_exists('filter', $filter)) {
+                    if (!class_exists($filter['filter'])) {
+                        throw new FilterNotFoundException($filter);
+                    }
+                    if (!array_key_exists('params', $filter)) {
+                        $filter['params'] = [];
+                    }
+                    if ($asObject) {
+                        return new $filter['filter'](array_key_exists('params', $filter) ? $filter['params'] : []);
+                    } else {
+                        return $filter;
+                    }
+                } elseif (array_key_exists('params', $filter) && array_key_exists('default', $filter['params'])) {
+                    if ($asObject) {
+                        return new DefaultFilter(['default' => $filter['params']['default']]);
+                    } else {
+                        return ['filter' => DefaultFilter::className(), 'params' => ['default' => $filter['params']['default']]];
+                    }
+                } else {
+                    throw new WrongFilterException($attribute, $filter);
+                }
+            } elseif ($filter instanceof FilterInterface) {
+                return $filter;
+            } else {
+                return new DefaultFilter(['default' => $filter]);
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Фильтрация значения атрибута.
+     * @param string $attribute Имя атрибута.
+     * @param mixed $value Фильтруемое значение.
+     * @return mixed
+     * @throws FilterNotFoundException
+     * @throws WrongFilterException
+     */
+    protected function filterAttributeValue($attribute, $value)
+    {
+        if ($this->_isFilterAttributes) {
+            $attrKey = $this->getAttributeKey($attribute);
+            if (array_key_exists($attrKey, $this->_attributes) && !empty($this->_attributes[$attrKey]['filters'])) {
+                foreach ($this->_attributes[$attrKey]['filters'] as $filter) {
+                    if (!$filter instanceof FilterInterface) {
+                        $filter = $this->getFilter($this->_attributes[$attrKey]['name'], $filter, true);
+                    }
+                    if (!$filter) {
+                        throw new WrongFilterException($this->_attributes[$attrKey]['name'], $filter);
+                    }
+                    $value = $filter->filter($value);
                 }
             }
         }
+        return $value;
     }
 
     /**
@@ -50,13 +223,13 @@ abstract class BaseComponent
      * Need return array. Example:
      * ```
      * [
-     *      'AttrName' => 'DefaultValue',
+     *      'AttrName' => 'filter',
      *      'AttrName',
      *      0 => 'AttrName'
      * ]
      * @return mixed[]
      */
-    public function getExtAttributes()
+    public function extendedAttributes()
     {
         return [];
     }
@@ -68,8 +241,8 @@ abstract class BaseComponent
      */
     public function hasAttribute($name)
     {
-        $name = strtolower($name);
-        return method_exists($this, 'get' . $name) || array_key_exists($name, $this->_attributes);
+        $attributeKey = $this->getAttributeKey($name);
+        return method_exists($this, 'get' . $attributeKey) || array_key_exists($attributeKey, $this->_attributes);
     }
 
     /**
@@ -120,11 +293,11 @@ abstract class BaseComponent
      */
     public function __get($name)
     {
-        $lowName = strtolower($name);
-        if (method_exists($this, 'get' . $lowName)) {
-            return call_user_func([$this, 'get' . $lowName]);
-        } elseif (array_key_exists($lowName, $this->_attributes)) {
-            return ($this->_attributes[$lowName]);
+        $attributeKey = $this->getAttributeKey($name);
+        if (method_exists($this, 'get' . $attributeKey)) {
+            return call_user_func([$this, 'get' . $attributeKey]);
+        } elseif (array_key_exists($attributeKey, $this->_attributes)) {
+            return ($this->_attributes[$attributeKey]['value']);
         }
         throw new AttributeNotFoundException($name, $this);
     }
@@ -138,14 +311,68 @@ abstract class BaseComponent
      */
     public function __set($name, $value)
     {
-        $lowName = strtolower($name);
-        if (method_exists($this, 'set' . $lowName)) {
-            return call_user_func([$this, 'set' . $lowName], $value);
-        } elseif (array_key_exists($lowName, $this->_attributes)) {
-            $oldValue = $this->_attributes[$lowName];
-            $this->_attributes[$lowName] = $value;
+        $attributeKey = $this->getAttributeKey($name);
+        if (method_exists($this, 'set' . $attributeKey)) {
+            return call_user_func([$this, 'set' . $attributeKey], $value);
+        } elseif (array_key_exists($attributeKey, $this->_attributes)) {
+            $oldValue = $this->_attributes[$attributeKey]['value'];
+            $this->_attributes[$attributeKey]['value'] = $this->filterAttributeValue($name, $value);
             return $oldValue;
         }
         throw new AttributeNotFoundException($name, $this);
+    }
+
+    /**
+     * Стандартный метод проверки атрибута объекта, на существование.
+     * @param string $name Имя атрибута.
+     * @return bool
+     */
+    public function __isset($name) {
+        $attributeKey = $this->getAttributeKey($name);
+        if (
+            method_exists($this, 'get' . $attributeKey) ||
+            method_exists($this, 'set' . $attributeKey) ||
+            array_key_exists($attributeKey, $this->_attributes)
+        ) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Преобразование объекта в строку.
+     * @return string
+     */
+    public function __toString()
+    {
+        $result = '';
+        $attributes = [];
+        foreach ($this->_attributes as $data) {
+            $attributes[$data['name']] = $data['value'];
+        }
+        $reflection = new \ReflectionClass($this);
+        foreach ($reflection->getProperties(\ReflectionProperty::IS_PUBLIC) as $reflectionProperty) {
+            $propName = $reflectionProperty->name;
+            $attributes[$propName] = $this->$propName;
+        }
+        ksort($attributes);
+        foreach ($attributes as $attributeName => $attributeValue) {
+            $result .= ', ' . StringHelper::printVar($attributeName) . '=>' . StringHelper::printVar($attributeValue);
+        }
+        return 'Object(' . $this->className() . '){' . trim($result, ', ') . '}';
+    }
+
+    protected function getAttributeKey($attributeName)
+    {
+        return strtolower(preg_replace('/[^a-z0-9]*/i', '', $attributeName));
+    }
+
+    /**
+     * Возвращает имя класса для объекта или статического класа.
+     * @return string
+     */
+    static public function className()
+    {
+        return get_called_class();
     }
 }

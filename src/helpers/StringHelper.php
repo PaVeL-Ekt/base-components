@@ -1,6 +1,6 @@
 <?php
 
-namespace PavelEkt\BaseComponents;
+namespace PavelEkt\BaseComponents\Helpers;
 
 use PavelEkt\BaseComponents\Exceptions\BadEncodingException;
 
@@ -197,6 +197,15 @@ class StringHelper
      */
     static public function strCrop($str, $maxLen, $cropType = self::STR_CROP_RIGHT, $encoding = null)
     {
+        if (is_null($maxLen)) {
+            return $str;
+        }
+        if (!is_int($maxLen)) {
+            $maxLen = intval($maxLen);
+        }
+        if ($maxLen === 0) {
+            return '';
+        }
         $encoding = static::getEncoding($encoding);
         if (!in_array($cropType, [self::STR_CROP_LEFT, self::STR_CROP_BOTH, self::STR_CROP_RIGHT])) {
             $cropType = self::STR_CROP_RIGHT;
@@ -225,7 +234,7 @@ class StringHelper
      * @param int &$count Количество проведенных замен.
      * @return string
      */
-    static public function strReplace($str, $search, $replace, $encoding = 'utf8', &$count)
+    static public function strReplace($str, $search, $replace, $encoding = 'utf8', &$count = null)
     {
         $searchLen = mb_strlen($search, $encoding);
         $replaceCount = 0;
@@ -239,5 +248,64 @@ class StringHelper
             $count = $replaceCount;
         }
         return $str;
+    }
+
+    /**
+     * Приведение типа к String
+     * @param mixed $value Исходное значение
+     * @return string
+     */
+    static public function toStr($value)
+    {
+        if (!is_string($value)) {
+            if (is_scalar($value)) {
+                if (is_bool($value)) {
+                    $value = $value ? 'true' : 'false';
+                } else {
+                    $value = strval($value);
+                }
+            } else {
+                $value = static::printVar($value);
+            }
+        }
+        return $value;
+    }
+
+    /**
+     * Преобразует переменную любого типа в строку
+     * @param mixed $value
+     * @return string
+     */
+    static public function printVar($value)
+    {
+        $result = '';
+        if (is_string($value)) {
+            $result = '\'' . $value . '\'';
+        } elseif (is_null($value)) {
+            $result = 'NULL';
+        } elseif (is_bool($value)) {
+            $result = ($value ? 'true' : 'false');
+        } elseif (is_int($value) || is_float($value)) {
+            $result = strval($value);
+        } elseif (is_array($value) || is_object($value)) {
+            if (is_object($value) && method_exists($value, '__toString')) {
+                $result = strval($value);
+            } else {
+                foreach ($value as $key => $data) {
+                    $result .= ',' . static::printVar($key) . '=>' . static::printVar($data);
+                }
+                $result = trim($result, ',');
+                if (is_array($value)) {
+                    $result = '[' . $result . ']';
+                } else {
+                    $result = 'Object(' . get_class($value) . '){' . $result . '}';
+                }
+            }
+        } elseif (is_resource($value)) {
+            $result = 'Resource(' . get_resource_type($value) . ')';
+        } elseif (is_callable($value)) {
+            $result = 'Callable';
+        }
+        return $result;
     }
 }
