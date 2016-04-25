@@ -26,6 +26,6 @@ class DefaultFilter extends BaseFilter
         if (is_null($value)) {
             return $this->default;
         }
-        return null;
+        return $value;
     }
 }

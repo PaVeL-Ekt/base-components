@@ -54,14 +54,13 @@ class HelpersTest extends \PHPUnit_Framework_TestCase
 
     public function testStringHelper()
     {
-        //
         $this->assertTrue(StringHelper::checkEncoding('utf8'));
         $this->assertFalse(StringHelper::checkEncoding('SomeWrongEncoding'));
 
         // strCrop test
         $this->assertEquals('Hello W...', StringHelper::strCrop('Hello World !!!', 10, StringHelper::STR_CROP_RIGHT));
         $this->assertEquals('...rld !!!', StringHelper::strCrop('Hello World !!!', 10, StringHelper::STR_CROP_LEFT));
-        $this->assertEquals('...rld ...', StringHelper::strCrop('Hello World !!!', 10, StringHelper::STR_CROP_BOTH));
+        $this->assertEquals('...Worl...', StringHelper::strCrop('Hello World !!!', 10, StringHelper::STR_CROP_BOTH));
 
         // strPad test
         $this->assertEquals('Hello******', StringHelper::strPad('Hello', 11, '*', STR_PAD_RIGHT));

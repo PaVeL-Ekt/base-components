@@ -12,7 +12,34 @@ class StringHelper
     /**
      * @var string Используемая по умолчанию кодировка.
      */
-    static private $_defaultEncoding = 'utf8';
+    static private $_defaultEncoding = 'UTF-8';
+
+    /**
+     * Служебный метод, проверяет, доступна ли кодировка в системе. Поиск ведется по нормализованному названию кодировки.
+     * @param string $encoding Название кодировки
+     * @return null|string
+     */
+    static protected function _getEncoding($encoding)
+    {
+        if (!empty($encoding)) {
+            $normalizeEncoding = strtoupper(preg_replace('/[^a-z0-9]*/i', '', $encoding));
+            $listEncodings = [];
+            array_map(function($element) use (&$listEncodings, $normalizeEncoding) {
+                $normalizeElement = strtoupper(preg_replace('/[^a-z0-9]*/i', '', $element));
+                if ($normalizeElement == $normalizeEncoding) {
+                    $listEncodings[] = $element;
+                }
+            }, mb_list_encodings());
+            if (!empty($listEncodings)) {
+                if (count($listEncodings) > 1 && in_array($encoding, $listEncodings)) {
+                    return $encoding;
+                } else {
+                    return $listEncodings[0];
+                }
+            }
+        }
+        return null;
+    }
 
     /**
      * Проверить, можно ли использовать указанную кодировку.
@@ -21,10 +48,8 @@ class StringHelper
      */
     static public function checkEncoding($encoding)
     {
-        if (empty($encoding) || !in_array($encoding, mb_list_encodings())) {
-            return false;
-        }
-        return true;
+        $encoding = static::_getEncoding($encoding);
+        return !empty($encoding);
     }
 
     /**
@@ -32,12 +57,13 @@ class StringHelper
      * @param string $encoding Устанавливаемая кодировка.
      * @throws BadEncodingException
      */
-    static public function setDefaultEncoding($encoding = 'utf8')
+    static public function setDefaultEncoding($encoding = 'UTF-8')
     {
-        if (!static::checkEncoding($encoding)) {
+        $sysEncoding = static::_getEncoding($encoding);
+        if (empty($sysEncoding)) {
             throw new BadEncodingException(['encoding' => $encoding]);
         }
-        static::$_defaultEncoding = $encoding;
+        static::$_defaultEncoding = $sysEncoding;
     }
 
     /**
@@ -234,7 +260,7 @@ class StringHelper
      * @param int &$count Количество проведенных замен.
      * @return string
      */
-    static public function strReplace($str, $search, $replace, $encoding = 'utf8', &$count = null)
+    static public function strReplace($str, $search, $replace, $encoding = 'UTF-8', &$count = null)
     {
         $searchLen = mb_strlen($search, $encoding);
         $replaceCount = 0;

@@ -11,7 +11,7 @@ use PavelEkt\BaseComponents\Interfaces\ValidatorInterface;
  */
 class EmailValidator implements ValidatorInterface
 {
-    public static function isValid($value)
+    public static function isValid($email)
     {
         return !(empty($email) || filter_var($email, FILTER_VALIDATE_EMAIL) === false);
     }
