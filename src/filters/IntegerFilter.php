@@ -16,14 +16,20 @@ use PavelEkt\BaseComponents\Helpers\StringHelper;
  */
 class IntegerFilter extends BaseFilter
 {
-    protected $_attributes = [
-        'default'   => 0,
-        'min' => null,
-        'max' => null,
-    ];
+    /**
+     * @inheritdoc
+     */
+    public function attributes()
+    {
+        return [
+            'default'   => 0,
+            'min' => null,
+            'max' => null,
+        ];
+    }
 
     /**
-     * @param mixed $value
+     * @inheritdoc
      * @return int
      */
     public function filter($value)

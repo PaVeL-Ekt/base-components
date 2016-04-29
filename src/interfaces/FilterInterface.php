@@ -2,6 +2,11 @@
 
 namespace PavelEkt\BaseComponents\Interfaces;
 
+/**
+ * Interface FilterInterface
+ * Интерфейс для компонентов фильтрации.
+ * @package PavelEkt\BaseComponents\Interfaces
+ */
 interface FilterInterface
 {
     /**

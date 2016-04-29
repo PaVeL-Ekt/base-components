@@ -16,15 +16,20 @@ use PavelEkt\BaseComponents\Helpers\StringHelper;
  */
 class FloatFilter extends BaseFilter
 {
-    protected $_attributes = [
-        'default'   => 0,
-        'min' => null,
-        'max' => null,
-    ];
+    /**
+     * @inheritdoc
+     */
+    public function attributes()
+    {
+        return [
+            'default' => 0,
+            'min' => null,
+            'max' => null,
+        ];
+    }
 
     /**
      * @inheritdoc
-     * @param mixed $value
      * @return float
      */
     public function filter($value)

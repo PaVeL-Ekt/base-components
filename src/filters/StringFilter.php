@@ -18,15 +18,25 @@ use PavelEkt\BaseComponents\Helpers\StringHelper;
  */
 class StringFilter extends BaseFilter
 {
-    protected $_attributes = [
-        'default'   => '',
-        'minLength' => 0,
-        'padString' => ' ',
-        'padType'   => STR_PAD_RIGHT,
-        'maxLength' => null,
-        'cropType'  => StringHelper::STR_CROP_RIGHT,
-    ];
+    /**
+     * @inheritdoc
+     */
+    public function attributes()
+    {
+        return [
+            'default'   => '',
+            'minLength' => 0,
+            'padString' => ' ',
+            'padType'   => STR_PAD_RIGHT,
+            'maxLength' => null,
+            'cropType'  => StringHelper::STR_CROP_RIGHT,
+        ];
+    }
 
+    /**
+     * @inheritdoc
+     * @return string
+     */
     public function filter($value)
     {
         if (is_null($value)) {

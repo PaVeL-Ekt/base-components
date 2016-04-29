@@ -14,14 +14,24 @@ use PavelEkt\BaseComponents\Helpers\StringHelper;
  */
 class RegexpFilter extends StringFilter
 {
-    public function extendedAttributes()
+    /**
+     * @inheritdoc
+     */
+    public function attributes()
     {
-        return [
-            'pattern',
-            'replacement'
-        ];
+        return array_merge_recursive(
+            parent::attributes(),
+            [
+                'pattern',
+                'replacement'
+            ]
+        );
     }
 
+    /**
+     * @inheritdoc
+     * @return string
+     */
     public function filter($value)
     {
         if (!is_string($value)) {

@@ -14,13 +14,19 @@ use PavelEkt\BaseComponents\Helpers\StringHelper;
  */
 class BooleanFilter extends BaseFilter
 {
-    protected $_attributes = [
-        'default'   => false,
-    ];
+    /**
+     * @inheritdoc
+     */
+    public function attributes()
+    {
+        return [
+            'default'   => false,
+        ];
+    }
 
     /**
-     * @param mixed $value
-     * @return bool
+     * @inheritdoc
+     * @return boolean
      */
     public function filter($value)
     {

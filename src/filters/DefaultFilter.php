@@ -14,9 +14,11 @@ class DefaultFilter extends BaseFilter
     /**
      * @inheritdoc
      */
-    protected $_attributes = [
-        'default'
-    ];
+    public function attributes() {
+        return [
+            'default'
+        ];
+    }
 
     /**
      * @inheritdoc
@@ -24,7 +26,7 @@ class DefaultFilter extends BaseFilter
     public function filter($value = null)
     {
         if (is_null($value)) {
-            return $this->default;
+            return $this->_getAttribute('default');
         }
         return $value;
     }
