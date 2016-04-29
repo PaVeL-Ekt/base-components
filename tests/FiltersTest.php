@@ -8,6 +8,8 @@ use PavelEkt\BaseComponents\Filters\FloatFilter;
 use PavelEkt\BaseComponents\Filters\IntegerFilter;
 use PavelEkt\BaseComponents\Filters\RegexpFilter;
 use PavelEkt\BaseComponents\Filters\StringFilter;
+use PavelEkt\BaseComponents\Filters\UrlFilter;
+use PavelEkt\BaseComponents\Filters\EmailFilter;
 
 class FiltersTest extends \PHPUnit_Framework_TestCase
 {
@@ -64,5 +66,21 @@ class FiltersTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('Object(stdClass){}', $filter->filter(new \stdClass()));
         $filter = new StringFilter(['padType'=>STR_PAD_BOTH, 'padString' => '<======>', 'minLength' => 10]);
         $this->assertEquals('==>test<==', $filter->filter('test'));
+    }
+
+    public function testUrlFilter()
+    {
+        $filter = new UrlFilter();
+        $this->assertEquals('http://yandex.ru', $filter->filter('http://yandex.ru'));
+        //  Negative tests
+        $this->assertEquals(null, $filter->filter('http:/yandex.ru'));
+    }
+
+    public function testEmailFilter()
+    {
+        $filter = new EmailFilter();
+        $this->assertEquals('pavel-ekt@yandex.ru', $filter->filter('pavel-ekt@yandex.ru'));
+        // Negative tests
+        $this->assertEquals(null, $filter->filter('pavel-ekt.yandex.ru'));
     }
 }
