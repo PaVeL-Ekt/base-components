@@ -15,7 +15,7 @@ class FilterNotFoundException extends BaseException
     {
         parent::__construct(
             'Filter \'' . $filterName . '\' not found.',
-            1005,
+            1015,
             $previous
         );
     }

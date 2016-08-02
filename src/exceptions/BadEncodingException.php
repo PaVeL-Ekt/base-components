@@ -10,7 +10,7 @@ class BadEncodingException extends BaseException
     {
         parent::__construct(
             'Trying to use unsupported encoding \'' . $encoding . '\'.',
-            1003,
+            1001,
             $previous
         );
     }

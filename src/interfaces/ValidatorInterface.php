@@ -10,5 +10,5 @@ interface ValidatorInterface
      * @param mixed $value Валидируемое значение.
      * @return boolean
      */
-    public static function isValid($value);
+    public function isValid($value);
 }

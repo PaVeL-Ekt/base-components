@@ -4,13 +4,13 @@ namespace PavelEkt\BaseComponents\Exceptions;
 
 use PavelEkt\BaseComponents\Abstracts\BaseException;
 
-class AttributeNotFoundException extends BaseException
+class AttributeValidationFailedException extends BaseException
 {
     public function __construct($attribute, $class = null, $previous = null)
     {
         parent::__construct(
-            'Attribute \'' . $attribute . '\' not found in class \'' . $this->getExceptionClass($class) . '\'.',
-            1010,
+            'The attribute \'' . $attribute . '\' validation failed in class \'' . $this->getExceptionClass($class) . '\'.',
+            1013,
             $previous
         );
     }

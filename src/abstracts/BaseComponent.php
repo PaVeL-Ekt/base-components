@@ -13,7 +13,7 @@ use PavelEkt\BaseComponents\Interfaces\FilterInterface;
 /**
  * Base components, for other packages.
  */
-abstract class BaseComponent
+abstract class BaseComponent extends BaseObject
 {
     /**
      * @var mixed[] $_attributes Component attributes.
@@ -108,6 +108,19 @@ abstract class BaseComponent
     }
 
     /**
+     * Служебный метод очистки атрибута.
+     * @param string        $name   Имя атрибута.
+     * @param null|string   $key    Ключ атрибута.
+     */
+    protected function _clearAttribute($name, $key = null)
+    {
+        if (is_null($key)) {
+            $key = $this->_getAttributeKey($name);
+        }
+        $this->_filterSetAttribute($name, null, $key);
+    }
+
+    /**
      * Метод получение фильтра, из его описания.
      * @param string $attribute Название атрибута.
      * @param mixed $filter Описание фильтра.
@@ -115,7 +128,7 @@ abstract class BaseComponent
      * @throws FilterNotFoundException
      * @throws WrongFilterException
      */
-    protected function _parseFilters($attribute, $filter)
+    protected function _parseRules($attribute, $filter)
     {
         $result = false;
         if ($this->_isFilterAttributes) {
@@ -132,7 +145,7 @@ abstract class BaseComponent
                     $result = new DefaultFilter(['default' => $filter['params']['default']]);
                 } else {
                     foreach ($filter as $subFilter) {
-                        $tmp = $this->_parseFilters($attribute, $subFilter);
+                        $tmp = $this->_parseRules($attribute, $subFilter);
                         if ($tmp) {
                             if (!is_array($result)) {
                                 $result = [];
@@ -275,7 +288,7 @@ abstract class BaseComponent
 
             if (ctype_digit((string) $attribute)) {
                 // Используется цифровой ключ
-                if (!$attrFilters = $this->_parseFilters($attribute, $value)) {
+                if (!$attrFilters = $this->_parseRules($attribute, $value)) {
                     // Фильтра нет, если значение является скалярным, считаем его атрибутом
                     if (is_scalar($value)) {
                         $attrKey = $this->_getAttributeKey($value);
@@ -286,7 +299,7 @@ abstract class BaseComponent
                 }
             } else {
                 // Ключ массива является именем атрибута
-                if ($this->_isFilterAttributes && $attrFilters = $this->_parseFilters($attribute, $value)) {
+                if ($this->_isFilterAttributes && $attrFilters = $this->_parseRules($attribute, $value)) {
                 } else {
                     $attrValue = $value;
                 }

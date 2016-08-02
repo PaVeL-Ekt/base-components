@@ -17,7 +17,7 @@ class WrongFilterException extends BaseException
         $filter = StringHelper::strCrop(StringHelper::printVar($filter), 50);
         parent::__construct(
             'Filter \'' . $filter . '\' for attribute \'' . $attributeName . '\' is wrong.',
-            1006,
+            1016,
             $previous
         );
     }

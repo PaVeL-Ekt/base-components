@@ -30,4 +30,9 @@ abstract class BaseException extends \Exception
         }
         return 'Unknown class';
     }
+
+    static public function getClass()
+    {
+        return get_called_class();
+    }
 }
